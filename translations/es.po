@@ -1,0 +1,156 @@
+# $Id$
+# Spanish translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+# cfd.import.inc: n/a
+# cfd.module: n/a
+# cfd.install: n/a
+# cfd.info: n/a
+# naringas <webmaster@casabaltazar.com>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2011-01-20 12:48-0600\n"
+"PO-Revision-Date: 2011-01-20 12:49-0500\n"
+"Last-Translator: naringas <webmaster@casabaltazar.com>\n"
+"Language-Team: null\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Virtaal 0.6.1\n"
+
+#: cfd.import.inc:8
+msgid "Select a @type file"
+msgstr "Seleccione un archivo @type"
+
+#: cfd.import.inc:12
+msgid "Submit"
+msgstr "Enviar"
+
+#: cfd.import.inc:24 cfd.module:214
+msgid "You must submit a @type file"
+msgstr "Debe enviar un archivo @type"
+
+#: cfd.module:12
+msgid "Provides content type support for Mexican CFDs or 'facturas'"
+msgstr ""
+"Proporciona soporte para Facturas Electronicas (de Mexico) como un "
+"tipo de contenido"
+
+#: cfd.module:14;320
+msgid "FE #"
+msgstr "FE #"
+
+#: cfd.module:136;320;658;28;36
+msgid "Download"
+msgstr "Descargar"
+
+#: cfd.module:144
+msgid "Select @type file"
+msgstr "Seleccione un archivo @type"
+
+#: cfd.module:147
+msgid "The CFD in XML format"
+msgstr "El CFD en formato XML"
+
+#: cfd.module:210
+msgid "The XML file %file is not a valid CFD"
+msgstr "El archivo XML %file no es un CFD valido"
+
+#: cfd.module:320
+msgid "Date"
+msgstr "Fecha"
+
+#: cfd.module:335
+msgid "No CFDs available."
+msgstr "No CFDs disponibles."
+
+#: cfd.module:390
+msgid "Start date"
+msgstr "Fecha inicial"
+
+#: cfd.module:397
+msgid "End date"
+msgstr "Fecha final"
+
+#: cfd.module:403
+msgid "Filter"
+msgstr "Filtrar"
+
+#: cfd.module:407;417;434
+msgid "Reset"
+msgstr "Reiniciar"
+
+#: cfd.module:426
+msgid "End date must be after start date"
+msgstr "La fecha inicial debe ser después de la fecha final"
+
+#: cfd.module:430
+msgid "Fill both dates or none"
+msgstr "Rellene ambas fechas o ninguna"
+
+#: cfd.module:683
+msgid "cfd"
+msgstr "cfd"
+
+#: cfd.module:683
+msgid "@num F.E.s deleted"
+msgstr "@num F.E.s elimidadas"
+
+#: cfd.module:66
+msgid "create FEs"
+msgstr "Crear FEs"
+
+#: cfd.module:66
+msgid "view assigned FEs"
+msgstr "Ver FEs asignadas"
+
+#: cfd.module:66
+msgid "delete any FE"
+msgstr "Eliminar cualquier FE"
+
+#: cfd.module:43
+msgid "View Facturas Electronicas"
+msgstr "Ver Facturas Electronicas"
+
+#: cfd.module:51
+msgid "Import FEs"
+msgstr "Importar FEs"
+
+#: cfd.module:52
+msgid "Import CFDs from a compressed file."
+msgstr "Importa CFDs desde un archivo comprimido."
+
+#: cfd.install:27
+msgid "Stores CFD in XML and also, RFC and date for access control and searching"
+msgstr ""
+"Guarda CFD en XML y también el RFC y la fecha para control de acceso "
+"y busqueda"
+
+#: cfd.install:34
+msgid "The cfd's {node}.nid"
+msgstr "El {node}.nid del CFD"
+
+#: cfd.install:41
+msgid "The cfd's {node_revisions}.vid"
+msgstr "La {node_revisions}.vid del CFD"
+
+#: cfd.install:48
+msgid "{users}.uid associated with the CFD; "
+msgstr "{users}.uid asociada con el CFD; "
+
+#: cfd.install:54
+msgid "The RFC of the client (receptor)"
+msgstr "El RFC del cliente (receptor)"
+
+#: cfd.info:0
+msgid "Facturacion Electronica"
+msgstr "Facturacion Electronica"
+
+#: cfd.info:0
+msgid "Add CFD (Comprobante Fiscal Digital aka Factura Electronica) as a node content type"
+msgstr ""
+"Agrega un CFD (Comprobante Fiscal Digital o Factura Electronica) como "
+"tipo de contenido de nodo"

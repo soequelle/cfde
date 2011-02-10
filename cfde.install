@@ -1,0 +1,82 @@
+<?php
+// $Id$
+
+/*
+ * @file Install file
+ */
+ 
+/**
+ * Implementation of hook_install().
+ */
+function cfde_install() {
+  // Use schema API to create the database table.
+  drupal_install_schema('cfde');
+
+  //  Set default node behavior to published by default
+  variable_set('node_options_cfde', array('status'));
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function cfde_uninstall() {
+  // Unset set variables
+  variable_del('node_options_cfde');
+  // Use schema API to delete database table.
+  drupal_uninstall_schema('cfde');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function cfde_schema() {
+  $schema['cfde'] = array(
+    'description' => t('Stores CFDs emitted in XML. also stores RFC and date for access control and searching'),
+    'fields' => array(
+        'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("The cfd's {node}.nid"),
+      ),
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("The cfd's {node_revisions}.vid"),
+      ),
+      'cliente_uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+        'description' => t('{users}.uid associated with the CFD'),
+      ),
+      'cliente_rfc' => array(
+        'type' => 'varchar',
+        'length' => '13',
+        'not null' => FALSE,
+        'description' => t("Receiving party's RFC (client)"),
+      ),
+      'fecha_cfd' => array(
+        'type' => 'datetime',
+        'not null' => FALSE,
+        'description' => t("Date of the CFD"),
+      ),
+      'xml_file' => array(
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+        'description' => t('The XML contents of the CFD'),
+      ),
+    ),
+    'primary key' => array('nid'),
+    'indexes' => array(
+      'uid' => array('cliente_uid'),
+      'date' => array('fecha_cfd')
+    ),
+  );
+  return $schema;
+}

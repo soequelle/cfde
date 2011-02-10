@@ -1,0 +1,665 @@
+<?php
+// $Id$
+
+/**
+ * @file Main module file
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function cfde_node_info() {
+  return array(
+    'cfde' => array(
+      'name' => t('Emitted Factura Electronica (FE)'),
+      'module' => 'cfde',
+      'description' => t("Provides content type support for Mexican CFDs for distribution (emission)"),
+      'has_title' => TRUE,
+      'title_label' => t('FE #'),
+      'has_body' => FALSE,
+      'locked' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function cfde_menu() {
+  $menu = array();
+  $menu['node/%node/download/pdf'] = array(
+    'type' => MENU_CALLBACK,
+    'title' => 'Download',
+    'access callback' => 'cfde_access',
+    'access arguments' => array('view', 1),
+    'page callback' => 'cfde_download_pdf',
+    'page arguments' => array(1),
+  );
+  $menu['node/%node/download/xml'] = array(
+    'type' => MENU_CALLBACK,
+    'title' => 'Download',
+    'access callback' => 'cfde_access',
+    'access arguments' => array('view', 1),
+    'page callback' => 'cfde_download_xml',
+    'page arguments' => array(1),
+  );
+  $menu['node/%node/html'] = array(
+    'type' => MENU_CALLBACK,
+    'title' => 'HTML View',
+    'access callback' => 'cfde_access',
+    'access arguments' => array('view', 1),
+    'page callback' => 'cfde_view_html',
+    'page arguments' => array(1),
+  );
+  $menu['cfds'] = array(
+    'title' => 'View Facturas Electronicas',
+    'access callback' => 'user_access',
+    'access arguments' => array('view assigned FEs'),
+//    'page callback' => 'cfde_page_view',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cfde_view_cfds'),
+  );
+  $menu['node/add/cfde/import'] = array(
+    'title' => 'Import FEs',
+    'description' => 'Import CFDs from a compressed file.',
+    'access callback' => 'user_access',
+    'access arguments' => array('create FEs'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cfde_import_form'),
+    'file' => './cfde.import.inc',
+  );
+  //Admin menu
+  $menu['admin/settings/cfde'] = array(
+    'title' => 'CFD settings',
+    'description' => 'Configure CFD settings',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer CFDe'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cfde_admin_form'),
+    'file' => './cfde.admin.inc',
+  );
+  return $menu;
+}
+
+/**MUST REVAMP
+ * Implementation of hook_perm().
+ */
+function cfde_perm() {
+  return array('create FEs', 'view assigned FEs', 'delete any FE', 'view any FE', 'administer CFDe');
+}
+
+
+/**MUST REVAMP
+ * Implementation of hook_access().
+ * Enforces permissions described by hook_perm() for node type cfd
+ * @return boolean true if access granted.
+ */
+function cfde_access($op, $node, $account = NULL) {
+  global $user;
+  if (!isset($account))
+    $account = $user;
+  
+  switch ($op) {
+    case 'view':
+      //don't allow viewing unpublished
+      if ($node->status == '0') {
+        return FALSE;
+      }
+      else {
+        //could check for names or uids.
+        //uid == 1 check here so this function works with cfde_menu() (??)
+        return (user_access('view assigned FEs', $account) && $account->uid == 1 ? TRUE : $node->cliente_uid == $account->uid) || user_access('view any FE', $account);
+      }
+
+    case 'create':
+      return user_access('create FEs', $account);
+
+    case 'delete':
+      return user_access('delete any FE', $account);
+
+    case 'update':
+      return FALSE;
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function cfde_form(&$node, $form_state) {
+  //get info defined in cfde_node_info()
+  $type = node_get_types('type', $node);
+  
+  $form = array();
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => $type->title_label,
+    '#required' => FALSE,
+    '#default_value' => $node->title,
+    '#weight' => -5,
+    '#maxlenght' => 255,
+    '#disabled' => TRUE,
+  );
+  $form['fecha_cfd'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Fecha y hora',
+    '#required' => FALSE,
+    '#default_value' => $node->fecha_cfd,
+    '#weight' => 0,
+    '#maxlenght' => 13,
+    '#disabled' => TRUE,
+  );
+  $form['cliente_rfc'] = array(
+    '#type' => 'textfield',
+    '#title' => 'RFC receptor',
+    '#required' => FALSE,
+    '#default_value' => $node->cliente_rfc,
+    '#weight' => 1,
+    '#maxlenght' => 13,
+    '#disabled' => TRUE,
+  );
+  //for uploading XML file
+  //if node has nid, it is not a new node
+  if ($node->nid) {
+    $form['xml_file']['#prefix'] = '<strong>' . t('Download') . ':</strong><br />';
+    $form['xml_file']['#value'] = cfde_get_dl_links($node->title, $node->nid);
+    $form['xml_file']['#weight'] = 5;
+  }
+  else {
+    $form['#attributes']['enctype'] = 'multipart/form-data';
+    $form['xml_file'] = array(
+      '#type' => 'file',
+      '#title' => t('Select @type file', array('@type' => 'XML')),
+      '#required' => FALSE,
+      '#weight' => 5,
+      '#description' => t('The CFD in XML format'),
+    );
+  }
+  $form['#submit'][] = 'cfde_xml_file_submit';
+  return $form;
+}
+
+function cfde_form_cfde_node_form_alter(&$form, &$form_state) {
+  // disable revisions and previews, to make my life easy
+  $form['revision_information']['#access'] = FALSE;
+  $form['buttons']['preview']['#access'] = FALSE;
+  // if we're on the edit form, then no 'save' button
+  if ($form['buttons']['delete'])
+    $form['buttons']['submit']['#access'] = FALSE;
+}
+
+/**
+ * Ensures the content of the file submited is added to $node->xml_file.
+ */
+function cfde_xml_file_submit($form, &$form_state) {
+  //read the tmp file from _FILES and put it in the node
+  $file_name = $_FILES['files']['tmp_name']['xml_file'];
+  $fh = fopen($file_name, 'r');
+  $content = fread($fh, filesize($file_name));
+  fclose($fh);
+  // node_form_submit() will read $form_state['values'] to populate node data
+  $form_state['values']['xml_file'] = $content;
+}
+
+/**
+ * Validates a CFD against cfdv2.xsd (XML Schema provided by SAT)
+ * @param mixed $xml filename or xml data to validate
+ * @return bool true if it is a valid xml
+ */
+function cfde_xml_schema_validate($xml) {
+  $doc = new DOMDocument();
+  //load xml data string or filename
+  if (is_file($xml))
+    $doc->load($xml, LIBXML_NOWARNING);
+  else
+    $doc->loadXML($xml);
+
+  $schemaFileName = drupal_get_path('module', 'cfde') . '/resources/sat/cfdv2.xsd';
+  $validcfd = @$doc->schemaValidate($schemaFileName);
+  
+  return $validcfd;
+}
+
+/**
+ * Implementation of hook_validate();
+ * checks if a XML file was uploaded and if it is a valid CFD in the node form.
+ */
+function cfde_validate($node, &$form) {
+  // only validate on node submissions
+  if ($node->nid == NULL) {
+    $file_name = $_FILES['files']['tmp_name']['xml_file'];
+    $xml_file_name = $_FILES['files']['name']['xml_file'];
+    $upload_size = $_FILES['files']['size']['xml_file'];
+    $file_type = $_FILES['files']['type']['xml_file'];
+    
+    if ($upload_size > 0 && $file_type == 'text/xml') {
+      if (!cfde_xml_schema_validate($file_name)) {
+        form_set_error('xml_file', t('The XML file %file is not a valid CFD', array('%file' => $xml_file_name)));
+      }
+    }
+    else {
+      form_set_error('xml_file', t('You must submit a @type file', array('@type' => 'XML')));
+    }
+  }
+}
+
+/**
+ * Fills $node with the details read from the $node->xml_file;
+ * fills fecha_cfd, cliente_rfc, and title (= serie + folio)
+ * 
+ * @param StdObject $node (by reference)
+ */
+function cfde_autofill_fields(&$node) {
+  //parse XML file read (with xml DOM(simpleXML sucks at namespaces))
+  $doc = new DOMDocument();
+  $doc->loadXML($node->xml_file);
+  $xpath = new DOMXPath($doc);
+  $xpath->registerNamespace('cfd', 'http://www.sat.gob.mx/cfd/2');
+  $serie = $xpath->query('/cfd:Comprobante/@serie');
+  $folio = $xpath->query('/cfd:Comprobante/@folio');
+  $fecha_cfd = $xpath->query('/cfd:Comprobante/@fecha');
+  $cliente_rfc = $xpath->query('/cfd:Comprobante/cfd:Receptor/@rfc');
+  //now save into the node (->item(0) for first match)
+  $node->fecha_cfd = $fecha_cfd->item(0)->value;
+  $node->cliente_rfc = $cliente_rfc->item(0)->value;
+  $node->title = $serie->item(0)->value . $folio->item(0)->value;
+}
+
+/**
+ * Implementation of hook_instert().
+ */
+function cfde_insert($node) {
+  cfde_autofill_fields($node);
+  
+  
+  //if $node->cliente_rfc matches a username, set $node->cliente_uid to that user
+  $node->cliente_uid = cfde_username2uid($node->cliente_rfc);
+  
+  //for updating title
+  $change_node = array(
+    'nid' => $node->nid,
+    'vid' => $node->vid,
+    'title' => $node->title,
+  );
+  
+  //make sure generic RFC they are not publised
+  if ($node->cliente_rfc == 'XAXX010101000') {
+    $change_node['status'] = 0;
+  }
+  
+  drupal_write_record('cfde', $node);
+  drupal_write_record('node', $change_node, 'nid');
+  drupal_write_record('node_revisions', $change_node , 'vid');
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function cfde_update($node) {
+  //revisions are disabled on the form
+  if ($node->revision) {
+    cfde_instert($node);
+  }
+  else {
+    //do nothing
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function cfde_delete(&$node) {
+  db_query('DELETE FROM {cfde} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function cfde_load($node) {
+  return db_fetch_object(db_query('SELECT * FROM {cfde} WHERE nid = %d AND vid = %d', $node->nid, $node->vid));
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function cfde_view($node, $teaser = FALSE, $page = FALSE) {
+//  return node_prepare($node, $teaser);
+  if (!$teaser) {
+    $node = node_prepare($node, $teaser);
+    //add the other elements
+    $node->content['cfde_fields'] = array(
+      '#value' => theme('cfde_fields', $node),
+      '#weight' => 4,
+    );
+  }
+  else {
+    $node = node_prepare($node, $teaser);
+  }
+  drupal_set_title(t('FE-@title', array('@title' => $node->title)));
+  return $node;
+}
+
+function theme_cfde_view_cfds($form) {
+  //based on theme_node_admin_nodes() in core - node.admin.inc
+  // If there are rows in this form, then $form['title'] contains a list of
+  // the title form elements.
+  $has_posts = isset($form['list']['title']) && is_array($form['list']['title']);
+  $header = array(t('FE #'), t('Date'), t('Download'));
+
+  $output = '';
+
+  $output .= drupal_render($form['date_filter']);
+  if ($has_posts) {
+    foreach (element_children($form['list']['title']) as $key) {
+      $row = array();
+      $row[] = drupal_render($form['list']['title'][$key]);
+      $row[] = drupal_render($form['list']['date'][$key]);
+      $row[] = drupal_render($form['list']['links'][$key]);
+      $rows[] = $row;
+    }
+  }
+  else {
+    $rows[] = array(array('data' => t('No CFDs available.'), 'colspan' => '3'));
+  }
+
+  $output .= theme('table', $header, $rows);
+  if ($form['pager']['#value']) {
+    $output .= drupal_render($form['pager']);
+  }
+
+  $output .= drupal_render($form);
+
+  return $output;
+}
+
+function cfde_view_cfds() {
+  global $user;
+  $form = cfde_datefilter_form();
+  
+  // construct and execute the query
+  $basic_query = 'SELECT {cfde}.nid, {cfde}.fecha_cfd, {node}.title FROM {cfde} INNER JOIN {node} ON {cfde}.vid = {node}.vid WHERE {node}.status = 1';
+  if ($user->uid != 1)
+    $basic_query .= " AND {cfde}.cliente_uid = $user->uid";
+  
+  if (isset($_SESSION['cfds_filter'])) {
+    $start = $_SESSION['cfds_filter']['start'];
+    $end = $_SESSION['cfds_filter']['end'];
+    $basic_query .= " AND {cfde}.fecha_cfd >= '$start' AND {cfde}.fecha_cfd <= '$end'";
+  }
+  $results = pager_query($basic_query . ' ORDER BY {cfde}.fecha_cfd ASC', 10);
+  
+  // construct the list
+  $list = array();
+  while ($cfd = db_fetch_object($results)) {
+    $list['title'][$cfd->nid] = array('#value' => l($cfd->title, "node/$cfd->nid"));
+    $list['date'][$cfd->nid] = array('#value' => date_format_date(date_make_date($cfd->fecha_cfd), 'short'));
+    $list['links'][$cfd->nid] = array('#value' => cfde_get_dl_links($cfd->title, $cfd->nid));
+  }
+  $list['pager'] = array('#value' => theme('pager', NULL, 10, 0));
+  $form['list'] = $list;
+  $form['#theme'] = 'cfde_view_cfds';
+
+  return $form;
+}
+
+/**
+ * 
+ */
+function cfde_datefilter_form() {
+  // @todo Detect language, somehow
+  drupal_add_js(libraries_get_path('datepick') . '/jquery.datepick.js');
+  drupal_add_js(libraries_get_path('datepick') . '/jquery.datepick-es.js');
+  drupal_add_css(drupal_get_path('module', 'cfde') . '/basa.datepick.css');
+  drupal_add_js(drupal_get_path('module', 'cfde')  . '/cfde_datepick.js');
+  
+  
+  $form['date_filter'] = array(
+    '#type' => 'fieldset',
+  );
+  $cal_img = libraries_get_path('datepick') . '/calendar-blue.gif';
+  $form['date_filter']['range'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Dates range'),
+    '#size' => 26,
+    '#maxlenght' => 24,
+    '#description' => t('Format: yyyy-mm-dd -- yyyy-mm-dd'),
+    '#suffix' => '<div style="display: none;"><img id="calImg" src="' . $cal_img . '" class="trigger"/></div>',
+    '#default_value' => $_SESSION['cfds_filter']['range'],
+  );
+  $form['date_filter']['filter'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+  );
+  $form['date_filter']['reset'] = array(
+    '#type' => 'submit',
+    '#value' => t('Reset'),
+  );
+  $form['#validate'][] = 'cfde_datefilter_form_validate';
+  $form['#submit'][] = 'cfde_datefilter_form_submit';
+  
+  return $form;
+}
+
+function cfde_datefilter_form_validate($form, &$form_state) {
+  //on reset, skip validation
+  if ($form_state['values']['op'] == t('Reset'))
+    return;
+  
+  $range = $form_state['values']['range'];
+  if (!empty($range) && !preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}\s--\s[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $range)) {
+    form_set_error('range', t('Please use the calendar popup or the following format: yyyy-mm-dd -- yyyy-mm-dd'));
+  }
+}
+
+function cfde_datefilter_form_submit($form, &$form_state) {
+  if ($form_state['values']['op'] == t('Reset') || empty($form_state['values']['range'])) {
+    unset($_SESSION['cfds_filter']);
+    return;
+  }
+  //put in _session for form's default value
+  $_SESSION['cfds_filter']['range'] = $form_state['values']['range'];
+  $dates = explode(' -- ', $form_state['values']['range']);
+  $start = date_make_date($dates[0]);
+  $end = date_make_date($dates[1]);
+  if (!empty($start) && !empty($end)) {
+      //date_add is only for PHP >= 5.3  :( so no date_add($end, new DateInterval('PT23H59M59S'));
+      //therefore we do this ugly thing: 86399 seconds = one day - one second
+      $end = date_make_date(date_format($end, DATE_FORMAT_UNIX) + 86399, NULL, DATE_UNIX);
+      
+      $_SESSION['cfds_filter']['start'] = date_format($start, DATE_FORMAT_ISO);
+      $_SESSION['cfds_filter']['end'] = date_format($end, DATE_FORMAT_ISO);
+  }
+}
+
+/**
+ * Returns the xml_file of the cfd node for download.
+ * @param StdObject $node
+ */
+function cfde_download_xml($node) {
+  //based on file_transfer()
+  if (ob_get_level()) {
+    ob_end_clean();
+  }
+  $headers = array(
+    'Content-Description: File Transfer',
+    "Content-Disposition: attachment; filename=$node->title.xml",
+    'Content-type: text/xml',
+  );
+  foreach ($headers as $header) {
+    // To prevent HTTP header injection, we delete new lines that are
+    // not followed by a space or a tab.
+    // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+    $header = preg_replace('/\r?\n(?!\t| )/', '', $header);
+    drupal_set_header($header);
+  }
+  print $node->xml_file;
+  exit();
+}
+
+/**
+ * Gets the out of the node and gets the PDF from cfd_make_pdf() then
+ * sends it to the browser.
+ * @param StdObject $node
+ */
+function cfde_download_pdf($node) {
+  require_once drupal_get_path('module', 'cfde') . '/cfd.pdf.inc';
+  //generate PDF
+  $pdf = cfd_make_pdf($node->xml_file);
+  //send generated file to browser
+  $pdf->SetTitle($node->title);
+  $pdf->SetDisplayMode('fullpage');
+  $pdf->Output("$node->title.pdf");
+}
+
+/**
+ * looks for the RFC as username in the {users} table.
+ * @param string $username
+ *   Looks for this username
+ * @return
+ *   UID of the corresponing RFC/username. If not found returns 1 (admin super user).
+ */
+function cfde_username2uid($username) {
+  $result = db_result(db_query("SELECT uid FROM {users} WHERE name='%s'", $username));
+  // if no user matches, return admin user
+  return $result ? $result : 1;
+}
+
+/**
+ * Implementation of hook_user().
+ * On user add: assign CFDs to new user's RFC (if it is a valid RFC)
+ * on user update: update CFD's assignment
+ * on user delete: assign CFDs to admin user (uid 1)
+ * Note: No Rules nor triggers because this functinality is crucial
+ */
+function cfde_user($op, &$edit, &$account, $category = NULL) {
+  $rfc_regexp = '/^(([A-Z]){3,4})([0-9]{6})((([A-Z]|[0-9]){3}))$/';
+  switch ($op) {
+    case 'insert':
+      // if the username is an RFC, then
+      if (@preg_match($rfc_regexp, $account->name)) {
+        // assign the client's CFDs
+        db_query("UPDATE {cfde} SET cliente_uid = %d WHERE cliente_rfc = '%s'", $account->uid, $account->name);
+      }
+      break;
+    case 'update':
+      // the uid shouldn't change, but the name may, so...
+      // on 'update' the new value is in $edit
+      $new_name = $edit['name'];
+      $old_name = $account->name;
+      
+      // ...if name changed and changed into a valid RFC
+      if ($new_name != $old_name && @preg_match($rfc_regexp, $new_name)) {
+        drupal_set_message(t('Username (RFC) change'));
+        // de-assign any existing CFDs with the old username
+        db_query("UPDATE {cfde} SET cliente_uid = 1 WHERE cliente_rfc = '%s'", $old_name);
+        // assign any existing CFDs to the new name
+        db_query("UPDATE {cfde} SET cliente_uid = %d WHERE cliente_rfc = '%s'", $account->uid, $new_name);
+      }
+      break;
+    case 'delete':
+      //assign back to admin user (uid 1)
+      if (@preg_match($rfc_regexp, $account->name)) {
+        db_query("UPDATE {cfde} SET cliente_uid = 1 WHERE cliente_rfc = '%s'", $account->name);
+      }
+      break;
+  }
+}
+
+/**
+ * returns the links string to download this cfd node as xml or pdf by using l()
+ * @return String link
+ */
+function cfde_get_dl_links($node_title, $node_nid) {
+  // add $node_title.pdf to PDF dl path so Adobe Reader gets that as a filename
+  return  l('PDF', "node/$node_nid/download/pdf/$node_title.pdf") . ' | ' . l('XML', "node/$node_nid/download/xml");
+}
+
+/**
+ * Applies the cfde_html.xsl transformation and outputs it as HTML
+ **/
+function cfde_view_html($node) {
+  $doc = new DOMDocument(); $doc->loadXML($node->xml_file);
+  //Header
+  $xsl_file = drupal_get_path('module', 'cfde') . '/resources/cfd_html.xsl';
+  $xsl_html = new DOMDocument(); $xsl_html->load($xsl_file);
+  $xsl = new XSLTProcessor(); $xsl->importStylesheet($xsl_html);
+  $html = $xsl->transformToXml($doc);
+  return $html;
+}
+
+/*******************************
+ * Theme functions for hook_view()
+ *******************************/
+
+function cfde_theme() {
+  return array(
+    'cfde_fields' => array(
+      'arguments' => array('node'),
+    ),
+    'cfde_view_cfds' => array(
+      'arguments' => array('form' => NULL),
+    ),
+  );
+}
+
+function theme_cfde_fields($node) {
+  $output = "<p><strong>RFC receptor: </strong>$node->cliente_rfc</p>";
+  $output .= "<p><strong>Fecha de la FE: </strong>$node->fecha_cfd</p>";
+  $output .= '<strong>' . t('Download') . ':</strong> ' . cfde_get_dl_links($node->title, $node->nid);
+  return $output;
+}
+
+/*
+ * Implementation of hook_cron().
+ * Deletes generic RFC and old CFDs (older than 5 weeks)
+ */
+function cfde_cron() {
+  // generic RFC OR time() - 5 weeks
+  $result = db_query("SELECT {cfde}.nid FROM {cfde}, {node} WHERE {cfde}.cliente_rfc = 'XAXX010101000' OR {node}.created <= %s", time() - 3024000);
+  $count = 0;
+  while ($cfd = db_fetch_array($result)) {
+    //do this instead of node_delte() as it is faster
+    db_query('DELETE FROM {node} WHERE nid = %d', $cfd['nid']);
+    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $cfd['nid']);
+    db_query('DELETE FROM {cfde} WHERE nid = %d', $cfd['nid']);
+    $count++;
+
+    //Code from node_delete(); Remove this node from the search index if needed.
+    if (function_exists('search_wipe')) {
+      search_wipe($cfd['nid'], 'node');
+    }
+  }
+  if ($count > 0) 
+    watchdog('cfde', '@num CFDs deleted', array('@num' => $count));
+}
+
+/**
+ * Implementation of hook_token_values()
+ *
+ * @return void
+ **/
+function cfde_token_values($type, $object = NULL) {
+  if ($type == 'node') {
+    $node = $object;
+    // just the date, no time
+    $tokens['fecha_cfd'] = substr($node->fecha_cfd, 0, 10);
+    $tokens['fecha_cfd-full'] = $node->fecha_cfd;
+    $tokens['cliente_rfc'] = $node->cliente_rfc;
+    // $tokens['cliente_uid'] = $node->cliente_uid;
+    return $tokens;
+  }
+}
+
+/**
+ * Impnlementation of hook_token_list()
+ *
+ * @return void
+ **/
+function cfde_token_list($type = 'all') {
+  if ($type == 'node' || $type == 'all') {
+    $tokens['node']['fecha_cfd'] = t("Date of the CFD");
+    $tokens['node']['fecha_cfd-full'] = t("Full date of the CFD");
+    $tokens['node']['cliente_rfc'] = t("Receiving party's RFC (client)");
+    // $tokens['node']['cliente_uid'] = t('{users}.uid associated with the CFD');
+    return $tokens;
+  }
+}
