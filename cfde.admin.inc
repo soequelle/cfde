@@ -11,7 +11,7 @@
  * 
  *
  **/
-function cfde_emision_admin_form() {
+function cfde_admin_form() {
   //Cron job settings
   //Calendar popup settings
   // $form['']
