@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file Defines default action for Rules module

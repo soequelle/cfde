@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file Contains PDF creation functions based on TCPDF.

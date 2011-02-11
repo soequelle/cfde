@@ -1,4 +1,3 @@
-$Id$
 
 El modulo require 2 archivos en este directorio: 
 

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /*
  * @file Provies functionality for importing CFDs as zipped XMLs files.

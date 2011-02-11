@@ -1,4 +1,3 @@
-$Id$
 
 The module needs 2 files in here:
 

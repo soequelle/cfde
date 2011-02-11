@@ -1,7 +1,6 @@
-; $Id$
 name = Facturas Electronicas (Emitted)
 description = Add CFD (Comprobante Fiscal Digital aka Factura Electronica) as a node content type for distribution (emission)
 core = 6.x
 dependencies[] = libraries
 dependencies[] = date_api
-dependencies[] = custom_username_validation
+;dependencies[] = custom_username_validation
