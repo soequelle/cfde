@@ -35,9 +35,12 @@ function cfde_action_mail_assigned_user($node, $settings) {
   $nid = $node->cliente_uid;
   // if user isn't admin or anonymous then
   if ($nid > 1) {
-    // $user = user_load($nid);
-    $user = new stdClass();
-    $user->mail = 'webmaster@casabaltazar.com';
+    $user = user_load($nid);
+    //mimemail alpha7 doesn't yet support attachements as content
+    // module_load_include('inc', 'cfde', 'cfd.pdf');
+    // $pdf = cfd_make_pdf($node->xml_file);
+    // $pdf->SetTitle($node->title);
+
     mimemail_rules_action_mail_to_user($user, $settings);
   }
 }

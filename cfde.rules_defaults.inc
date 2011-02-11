@@ -11,12 +11,12 @@
 function cfde_rules_defaults() {
   return array(
     'rules' => array(
-      'cfde_mail_notification' => array(
+      'rules_cfde_mail_notification' => array(
         '#version' => 6003,
         '#type' => 'rule',
         '#set' => 'event_node_insert',
-        '#label' => 'Enviar notificacion al usuario asignado',
-        '#active' => 1,
+        '#label' => t('Send email to assigned user'),
+        '#active' => 0,
         '#weight' => '0',
         '#categories' => array(
           0 => 'cfde',
@@ -24,7 +24,19 @@ function cfde_rules_defaults() {
         '#status' => 'default',
         '#conditions' => array(
           0 => array(
+            '#weight' => 0,
             '#type' => 'condition',
+            '#name' => 'rules_condition_content_is_type',
+            '#info' => array(
+              'module' => 'Node',
+              'label' => 'Contenido creado es Factura Electronica (FE) Emitida',
+              'arguments' => array(
+                'node' => array(
+                  'type' => 'node',
+                  'label' => 'Contenido',
+                ),
+              ),
+            ),
             '#settings' => array(
               'type' => array(
                 'cfde' => 'cfde',
@@ -33,38 +45,26 @@ function cfde_rules_defaults() {
                 'node' => 'node',
               ),
             ),
-            '#name' => 'rules_condition_content_is_type',
-            '#info' => array(
-              'label' => 'Contenido creado es Factura Electronica (FE) Emitida',
-              'arguments' => array(
-                'node' => array(
-                  'type' => 'node',
-                  'label' => 'Contenido',
-                ),
-              ),
-              'module' => 'Node',
-            ),
-            '#weight' => 0,
           ),
           1 => array(
-            '#weight' => 0,
+            '#weight' => 1,
+            '#type' => 'condition',
+            '#name' => 'rules_condition_content_is_published',
             '#info' => array(
-              'label' => 'Created content is published',
+              'module' => 'Node',
+              'label' => 'Contenido Creado esta publicado',
               'arguments' => array(
                 'node' => array(
                   'type' => 'node',
                   'label' => 'Contenido',
                 ),
               ),
-              'module' => 'Node',
             ),
-            '#name' => 'rules_condition_content_is_published',
             '#settings' => array(
               '#argument map' => array(
                 'node' => 'node',
               ),
             ),
-            '#type' => 'condition',
           ),
         ),
         '#actions' => array(
@@ -76,8 +76,7 @@ function cfde_rules_defaults() {
               'subject' => 'Su Factura Electronica [node:title] del [node:fecha_cfd]',
               'message_html' => '<h1><a href="[node:node-path]">[node:title]</a> <span class="description">del [node:fecha_cfd]</span></h1><p>Descargar (requiere iniciar sesión en la página): [node:cfde_dl_links]</p>',
               'message_plaintext' => '[node:title] del [node:fecha_cfd-full]
-
-  Ver y descargar (requiere iniciar sesión en la página): [node:node-path]',
+Ver y descargar (requiere iniciar sesión en la página): [node:node-path]',
               'attachments' => '',
               '#argument map' => array(
                 'node' => 'node',
