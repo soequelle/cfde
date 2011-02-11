@@ -1,16 +1,19 @@
+# $Id$
 # Spanish translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-# cfd.import.inc: n/a
-# cfd.module: n/a
-# cfd.install: n/a
-# cfd.info: n/a
+# cfde.import.inc: n/a
+# cfde.module: n/a
+# cfde.rules.inc: n/a
+# cfde.rules_forms.inc: n/a
+# cfde.install: n/a
+# cfde.info: n/a
 # naringas <webmaster@casabaltazar.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2011-01-20 12:48-0600\n"
-"PO-Revision-Date: 2011-01-20 12:49-0500\n"
+"POT-Creation-Date: 2011-02-10 12:14-0600\n"
+"PO-Revision-Date: 2011-02-10 12:23-0500\n"
 "Last-Translator: naringas <webmaster@casabaltazar.com>\n"
 "Language-Team: null\n"
 "Language: es\n"
@@ -20,136 +23,224 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Virtaal 0.6.1\n"
 
-#: cfd.import.inc:8
+#: cfde.import.inc:12
 msgid "Select a @type file"
 msgstr "Seleccione un archivo @type"
 
-#: cfd.import.inc:12
+#: cfde.import.inc:16
 msgid "Submit"
 msgstr "Enviar"
 
-#: cfd.import.inc:24 cfd.module:214
+#: cfde.import.inc:28 cfde.module:240
 msgid "You must submit a @type file"
 msgstr "Debe enviar un archivo @type"
 
-#: cfd.module:12
-msgid "Provides content type support for Mexican CFDs or 'facturas'"
+#: cfde.rules.inc:17
+msgid "Send email to assigned user"
+msgstr "Enviar email al usuario asignado"
+
+#: cfde.rules.inc:21
+msgid "Content"
+msgstr "Contenido"
+
+#: cfde.rules.inc:23
+msgid "Node of type Emitted FE"
+msgstr "Nodo tipo FE Emitida"
+
+#: cfde.rules.inc:27
+msgid "Sends a notification email to the user (client) who is the reciptient of the FE"
 msgstr ""
-"Proporciona soporte para Facturas Electronicas (de Mexico) como un "
+"Envia una notificacion por correo electronico al usuario (cliente) receptor "
+"de la FE"
+
+#: cfde.rules_forms.inc:29
+msgid "Subject"
+msgstr "Asunto"
+
+#: cfde.rules_forms.inc:31
+msgid "The mail's subject."
+msgstr "El asunto del correo"
+
+#: cfde.rules_forms.inc:35
+msgid "HTML message"
+msgstr "Mensaje HTML"
+
+#: cfde.rules_forms.inc:37
+msgid "The message body in HTML format."
+msgstr "El contenido del mensaje en formato HTML."
+
+#: cfde.rules_forms.inc:41
+msgid "Text message"
+msgstr "Mensaje de texto"
+
+#: cfde.rules_forms.inc:43
+msgid "Optional plaintext portion of a multipart message."
+msgstr ""
+
+#: cfde.rules_forms.inc:47
+msgid "Attachments"
+msgstr "Adjuntos"
+
+#: cfde.rules_forms.inc:49
+msgid "A list of attachments, one file per line like [mimetype]:[path] e.g. \"image/png:/files/images/mypic.png\"."
+msgstr ""
+
+#: cfde.module:14
+msgid "Emitted Factura Electronica (FE)"
+msgstr "Facutra Electronica (FE) Emitida"
+
+#: cfde.module:16
+msgid "Provides content type support for Mexican CFDs for distribution (emission)"
+msgstr ""
+"Proporciona soporte para Facturas Electronicas emitidas (de Mexico) como un "
 "tipo de contenido"
 
-#: cfd.module:14;320
+#: cfde.module:18;346
 msgid "FE #"
 msgstr "FE #"
 
-#: cfd.module:136;320;658;28;36
+#: cfde.module:163;346;607;32;40
 msgid "Download"
 msgstr "Descargar"
 
-#: cfd.module:144
+#: cfde.module:171
 msgid "Select @type file"
 msgstr "Seleccione un archivo @type"
 
-#: cfd.module:147
+#: cfde.module:174
 msgid "The CFD in XML format"
 msgstr "El CFD en formato XML"
 
-#: cfd.module:210
+#: cfde.module:236
 msgid "The XML file %file is not a valid CFD"
 msgstr "El archivo XML %file no es un CFD valido"
 
-#: cfd.module:320
+#: cfde.module:337
+msgid "FE-@title"
+msgstr "FE-@title"
+
+#: cfde.module:346
 msgid "Date"
 msgstr "Fecha"
 
-#: cfd.module:335
+#: cfde.module:361
 msgid "No CFDs available."
 msgstr "No CFDs disponibles."
 
-#: cfd.module:390
-msgid "Start date"
-msgstr "Fecha inicial"
+#: cfde.module:421
+msgid "Dates range"
+msgstr "Rango de fechas"
 
-#: cfd.module:397
-msgid "End date"
-msgstr "Fecha final"
+#: cfde.module:424
+msgid "Format: yyyy-mm-dd -- yyyy-mm-dd"
+msgstr "Formato: aaaa-mm-dd -- aaaa-mm-dd"
 
-#: cfd.module:403
+#: cfde.module:430
 msgid "Filter"
 msgstr "Filtrar"
 
-#: cfd.module:407;417;434
+#: cfde.module:434;444;454
 msgid "Reset"
 msgstr "Reiniciar"
 
-#: cfd.module:426
-msgid "End date must be after start date"
-msgstr "La fecha inicial debe ser después de la fecha final"
+#: cfde.module:449
+msgid "Please use the calendar popup or the following format: yyyy-mm-dd -- yyyy-mm-dd"
+msgstr ""
+"Por favor utilize el calendario emergente o el formato: aaaa-mm-dd -- aaaa-"
+"mm-dd"
 
-#: cfd.module:430
-msgid "Fill both dates or none"
-msgstr "Rellene ambas fechas o ninguna"
+#: cfde.module:551
+msgid "Username (RFC) change"
+msgstr "El nombre de usuario (RFC) cambio"
 
-#: cfd.module:683
-msgid "cfd"
-msgstr "cfd"
+#: cfde.module:657 cfde.install:66
+msgid "Date of the CFD"
+msgstr "Fecha del CFD"
 
-#: cfd.module:683
-msgid "@num F.E.s deleted"
-msgstr "@num F.E.s elimidadas"
+#: cfde.module:658 cfde.install:61
+msgid "Receiving party's RFC (client)"
+msgstr "RFC del receptor (cliente)"
 
-#: cfd.module:66
+#: cfde.module:632
+msgid "cfde"
+msgstr "cfde"
+
+#: cfde.module:632
+msgid "@num CFDs deleted"
+msgstr "@num CFDs elimidadas"
+
+#: cfde.module:88
 msgid "create FEs"
 msgstr "Crear FEs"
 
-#: cfd.module:66
+#: cfde.module:88
 msgid "view assigned FEs"
 msgstr "Ver FEs asignadas"
 
-#: cfd.module:66
+#: cfde.module:88
 msgid "delete any FE"
 msgstr "Eliminar cualquier FE"
 
-#: cfd.module:43
+#: cfde.module:88
+msgid "view any FE"
+msgstr "ver cualquier FE"
+
+#: cfde.module:88
+msgid "administer CFDe"
+msgstr "Administrar CFDe"
+
+#: cfde.module:48
+msgid "HTML View"
+msgstr "Vista HTML"
+
+#: cfde.module:55
 msgid "View Facturas Electronicas"
 msgstr "Ver Facturas Electronicas"
 
-#: cfd.module:51
+#: cfde.module:63
 msgid "Import FEs"
 msgstr "Importar FEs"
 
-#: cfd.module:52
+#: cfde.module:64
 msgid "Import CFDs from a compressed file."
 msgstr "Importa CFDs desde un archivo comprimido."
 
-#: cfd.install:27
-msgid "Stores CFD in XML and also, RFC and date for access control and searching"
-msgstr ""
-"Guarda CFD en XML y también el RFC y la fecha para control de acceso "
-"y busqueda"
+#: cfde.module:73
+msgid "CFD settings"
+msgstr "Configuracion de CFD"
 
-#: cfd.install:34
+#: cfde.module:74
+msgid "Change CFD settings"
+msgstr "Configurar las opciones de CFDe"
+
+#: cfde.install:34
+msgid "Stores CFDs emitted in XML. also stores RFC and date for access control and searching"
+msgstr ""
+"Guarda CFD en XML y también el RFC y la fecha para control de acceso y "
+"busqueda"
+
+#: cfde.install:41
 msgid "The cfd's {node}.nid"
 msgstr "El {node}.nid del CFD"
 
-#: cfd.install:41
+#: cfde.install:48
 msgid "The cfd's {node_revisions}.vid"
 msgstr "La {node_revisions}.vid del CFD"
 
-#: cfd.install:48
-msgid "{users}.uid associated with the CFD; "
-msgstr "{users}.uid asociada con el CFD; "
+#: cfde.install:55
+msgid "{users}.uid associated with the CFD"
+msgstr "{users}.uid asociada con el CFD"
 
-#: cfd.install:54
-msgid "The RFC of the client (receptor)"
-msgstr "El RFC del cliente (receptor)"
+#: cfde.install:72
+msgid "The XML contents of the CFD"
+msgstr "El Contenido en XML del CFD"
 
-#: cfd.info:0
-msgid "Facturacion Electronica"
-msgstr "Facturacion Electronica"
+#: cfde.info:0
+msgid "Facturas Electronicas (Emitted)"
+msgstr "Facutas Electronicas (Emitidas)"
 
-#: cfd.info:0
-msgid "Add CFD (Comprobante Fiscal Digital aka Factura Electronica) as a node content type"
+#: cfde.info:0
+msgid "Add CFD (Comprobante Fiscal Digital aka Factura Electronica) as a node content type for distribution (emission)"
 msgstr ""
-"Agrega un CFD (Comprobante Fiscal Digital o Factura Electronica) como "
-"tipo de contenido de nodo"
+"Agrega un CFD (Comprobante Fiscal Digital o Factura Electronica) como tipo "
+"de contenido de nodo para la distribución (emisión)"
