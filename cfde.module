@@ -80,6 +80,20 @@ function cfde_menu() {
   return $menu;
 }
 
+/**
+ * Implementation of hook_theme()
+ **/
+function cfde_theme() {
+  return array(
+    'cfde_fields' => array(
+      'arguments' => array('node'),
+    ),
+    'cfde_view_cfds' => array(
+      'arguments' => array('form' => NULL),
+    ),
+  );
+}
+
 /**MUST REVAMP
  * Implementation of hook_perm().
  */
@@ -337,8 +351,21 @@ function cfde_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+/**
+ * Used in cfde_view()
+ **/
+function theme_cfde_fields($node) {
+  $output = "<p><strong>RFC receptor: </strong>$node->cliente_rfc</p>";
+  $output .= "<p><strong>Fecha de la FE: </strong>$node->fecha_cfd</p>";
+  $output .= '<strong>' . t('Download') . ':</strong> ' . cfde_get_dl_links($node->title, $node->nid);
+  return $output;
+}
+
+/**
+ * Themes cfde_view_cdfd() in content management style
+ * based on theme_node_admin_nodes() in core - node.admin.inc
+ **/
 function theme_cfde_view_cfds($form) {
-  //based on theme_node_admin_nodes() in core - node.admin.inc
   // If there are rows in this form, then $form['title'] contains a list of
   // the title form elements.
   $has_posts = isset($form['list']['title']) && is_array($form['list']['title']);
@@ -369,6 +396,9 @@ function theme_cfde_view_cfds($form) {
 
   return $output;
 }
+/**
+ * 'cfds/' menu entry callback
+ **/
 
 function cfde_view_cfds() {
   global $user;
@@ -401,7 +431,8 @@ function cfde_view_cfds() {
 }
 
 /**
- * 
+ * Form for date filter (used in cfde_view_cfds())
+ * TODO be smart about datepick (add settings?)
  */
 function cfde_datefilter_form() {
   // @todo Detect language, somehow
@@ -500,7 +531,8 @@ function cfde_download_xml($node) {
  * @param StdObject $node
  */
 function cfde_download_pdf($node) {
-  require_once drupal_get_path('module', 'cfde') . '/cfd.pdf.inc';
+  module_load_include('inc', 'cfde', 'cfd.pdf');
+  // require_once drupal_get_path('module', 'cfde') . '/cfd.pdf.inc';
   //generate PDF
   $pdf = cfd_make_pdf($node->xml_file);
   //send generated file to browser
@@ -585,28 +617,6 @@ function cfde_view_html($node) {
   return $html;
 }
 
-/*******************************
- * Theme functions for hook_view()
- *******************************/
-
-function cfde_theme() {
-  return array(
-    'cfde_fields' => array(
-      'arguments' => array('node'),
-    ),
-    'cfde_view_cfds' => array(
-      'arguments' => array('form' => NULL),
-    ),
-  );
-}
-
-function theme_cfde_fields($node) {
-  $output = "<p><strong>RFC receptor: </strong>$node->cliente_rfc</p>";
-  $output .= "<p><strong>Fecha de la FE: </strong>$node->fecha_cfd</p>";
-  $output .= '<strong>' . t('Download') . ':</strong> ' . cfde_get_dl_links($node->title, $node->nid);
-  return $output;
-}
-
 /*
  * Implementation of hook_cron().
  * Deletes generic RFC and old CFDs (older than 5 weeks)
@@ -643,7 +653,8 @@ function cfde_token_values($type, $object = NULL) {
     $tokens['fecha_cfd'] = substr($node->fecha_cfd, 0, 10);
     $tokens['fecha_cfd-full'] = $node->fecha_cfd;
     $tokens['cliente_rfc'] = $node->cliente_rfc;
-    // $tokens['cliente_uid'] = $node->cliente_uid;
+    $tokens['cliente_uid'] = $node->cliente_uid;
+    $tokens['cfde_dl_links'] = cfde_get_dl_links($node->title, $node->nid);
     return $tokens;
   }
 }
@@ -655,10 +666,11 @@ function cfde_token_values($type, $object = NULL) {
  **/
 function cfde_token_list($type = 'all') {
   if ($type == 'node' || $type == 'all') {
-    $tokens['node']['fecha_cfd'] = t("Date of the CFD");
-    $tokens['node']['fecha_cfd-full'] = t("Full date of the CFD");
+    $tokens['node']['fecha_cfd'] = t('Date of the CFD');
+    $tokens['node']['fecha_cfd-full'] = t('Full date of the CFD');
     $tokens['node']['cliente_rfc'] = t("Receiving party's RFC (client)");
-    // $tokens['node']['cliente_uid'] = t('{users}.uid associated with the CFD');
+    $tokens['node']['cliente_uid'] = t('{users}.uid associated with the CFD');
+    $tokens['node']['cfde_dl_links'] = t('HTML links to download this CFD (XML and PDF)');
     return $tokens;
   }
 }
