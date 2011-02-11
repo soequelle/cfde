@@ -62,7 +62,7 @@ function cfde_schema() {
       'fecha_cfd' => array(
         'type' => 'datetime',
         'not null' => FALSE,
-        'description' => t("Date of the CFD"),
+        'description' => t('Date of the CFD'),
       ),
       'xml_file' => array(
         'type' => 'text',
