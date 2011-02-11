@@ -34,6 +34,7 @@ function cfde_import_form_submit($form, &$form_state) {
 
   $zip = zip_open($file_name);
   if ($zip) {
+    $count = 0;
     while ($zip_entry = zip_read($zip)) {
       // check for .xml files
       if (substr(zip_entry_name($zip_entry), -4) == '.xml') {
@@ -47,9 +48,11 @@ function cfde_import_form_submit($form, &$form_state) {
         $node->uid = $user->uid;
         $node->xml_file = $xml;
         node_save($node);
-        drupal_set_message($node->title . ' saved');
+        $count++
+        drupal_set_message(t('@node saved', array('@node' => $node->title)));
       }
     }
   }
   zip_close($zip);
+  watchdog('cfde', '@num CFDs added', array('@num' => $count)))
 }
