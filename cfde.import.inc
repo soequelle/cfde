@@ -48,11 +48,11 @@ function cfde_import_form_submit($form, &$form_state) {
         $node->uid = $user->uid;
         $node->xml_file = $xml;
         node_save($node);
-        $count++
+        $count++;
         drupal_set_message(t('@node saved', array('@node' => $node->title)));
       }
     }
   }
   zip_close($zip);
-  watchdog('cfde', '@num CFDs added', array('@num' => $count)))
+  watchdog('cfde', t('@num CFDs imported from @filename', array('@num' => $count, '@filename' => $zip_file_name)));
 }
