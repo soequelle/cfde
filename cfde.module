@@ -622,15 +622,15 @@ function cfde_view_html($node) {
  * Deletes generic RFC and old CFDs (older than 5 weeks)
  */
 function cfde_cron() {
-  // generic RFC OR time() - 5 weeks
-  $result = db_query("SELECT {cfde}.nid FROM {cfde}, {node} WHERE {cfde}.cliente_rfc = 'XAXX010101000' OR {node}.created <= %s", time() - 3024000);
+  // generic RFC OR time() - 5 weeks (3024000)
+  $result = db_query("SELECT {cfde}.nid FROM {cfde}, {node} WHERE {cfde}.cliente_rfc = 'XAXX010101000' OR {node}.created <= %d GROUP BY {cfde}.nid", time() - 3024000);
   $count = 0;
   while ($cfd = db_fetch_array($result)) {
-    //do this instead of node_delte() as it is faster
+    $count++;
+    //do this instead of node_delte() as it is faster?
     db_query('DELETE FROM {node} WHERE nid = %d', $cfd['nid']);
     db_query('DELETE FROM {node_revisions} WHERE nid = %d', $cfd['nid']);
     db_query('DELETE FROM {cfde} WHERE nid = %d', $cfd['nid']);
-    $count++;
 
     //Code from node_delete(); Remove this node from the search index if needed.
     if (function_exists('search_wipe')) {
@@ -638,7 +638,7 @@ function cfde_cron() {
     }
   }
   if ($count > 0) 
-    watchdog('cfde', '@num CFDs deleted', array('@num' => $count));
+    watchdog('cfde_cron', '@num CFDs deleted', array('@num' => $count));
 }
 
 /**
