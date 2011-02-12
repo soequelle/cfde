@@ -22,7 +22,7 @@ function cfde_rules_action_info() {
           'description' => t('Node of type Emitted FE'),
         ),
       ),
-      'eval input' => array('from', 'to', 'subject', 'message_html', 'message_plaintext', 'attachments'),
+      'eval input' => array('from', 'subject', 'message_html', 'message_plaintext', 'attachments'),
       'help' => t('Sends a notification email to the user (client) who is the reciptient of the FE'),
     ),
   );
