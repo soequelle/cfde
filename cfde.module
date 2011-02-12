@@ -560,7 +560,8 @@ function cfde_username2uid($username) {
  * On user add: assign CFDs to new user's RFC (if it is a valid RFC)
  * on user update: update CFD's assignment
  * on user delete: assign CFDs to admin user (uid 1)
- * Note: No Rules nor triggers because this functinality is crucial
+ * Adds email notificaion option to user form
+ * Note: Not implemented with rules nor triggers because this functinality is crucial
  */
 function cfde_user($op, &$edit, &$account, $category = NULL) {
   $rfc_regexp = '/^(([A-Z]){3,4})([0-9]{6})((([A-Z]|[0-9]){3}))$/';
@@ -594,17 +595,19 @@ function cfde_user($op, &$edit, &$account, $category = NULL) {
       }
       break;
     case 'form':
-      //TODO also needs to check if the included rule is activated, but how?
       if ($category == 'account' && module_exists('rules')) {
-        $form = array();
-        $form['mimemail']['cfde_mail_notify'] = array(
-          '#type'           => 'checkbox',
-          '#title'           => t('Recieve notification on new FEs'),
-          '#default_value'   => $account->cfde_mail_notify,
-          '#description'     => t('Check this option if you wish to receive an email notification whenever FEs are emitted for you'),
-          '#weight' => 2,
-        );
-        return $form;
+        $rules = rules_get_configured_items();
+        if ($rules['rules_cfde_mail_notification']['#active']) {
+          $form = array();
+          $form['mimemail']['cfde_mail_notify'] = array(
+            '#type'           => 'checkbox',
+            '#title'           => t('Recieve notification on new FEs'),
+            '#default_value'   => $account->cfde_mail_notify,
+            '#description'     => t('Check this option if you wish to receive an email notification whenever FEs are emitted for you'),
+            '#weight' => 2,
+          );
+          return $form;
+        }
       }
       break;
   }
