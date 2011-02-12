@@ -296,7 +296,7 @@ function cfde_insert($node) {
   );
   
   //make sure generic RFC they are not publised
-  if ($node->cliente_rfc == 'CFD_RFC_GENERIC') {
+  if ($node->cliente_rfc == CFD_RFC_GENERIC) {
     $change_node['status'] = 0;
   }
   
