@@ -4,6 +4,8 @@
  * @file Main module file
  */
 
+define('CFD_RFC_GENERIC', 'XAXX010101000');
+
 /**
  * Implementation of hook_node_info().
  */
@@ -283,7 +285,6 @@ function cfde_autofill_fields(&$node) {
 function cfde_insert($node) {
   cfde_autofill_fields($node);
   
-  
   //if $node->cliente_rfc matches a username, set $node->cliente_uid to that user
   $node->cliente_uid = cfde_username2uid($node->cliente_rfc);
   
@@ -295,7 +296,7 @@ function cfde_insert($node) {
   );
   
   //make sure generic RFC they are not publised
-  if ($node->cliente_rfc == 'XAXX010101000') {
+  if ($node->cliente_rfc == 'CFD_RFC_GENERIC') {
     $change_node['status'] = 0;
   }
   
@@ -623,7 +624,7 @@ function cfde_view_html($node) {
  */
 function cfde_cron() {
   // generic RFC OR time() - 5 weeks (3024000)
-  $result = db_query("SELECT {cfde}.nid FROM {cfde}, {node} WHERE {cfde}.cliente_rfc = 'XAXX010101000' OR {node}.created <= %d GROUP BY {cfde}.nid", time() - 3024000);
+  $result = db_query("SELECT {cfde}.nid FROM {cfde}, {node} WHERE {cfde}.cliente_rfc = '%s' OR {node}.created <= %d GROUP BY {cfde}.nid", CFD_RFC_GENERIC, time() - 3024000);
   $count = 0;
   while ($cfd = db_fetch_array($result)) {
     $count++;
