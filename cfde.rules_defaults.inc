@@ -76,7 +76,7 @@ function cfde_rules_defaults() {
               'subject' => 'Su Factura Electronica [node:title] del [node:fecha_cfd]',
               'message_html' => '<h1><a href="[node:node-path]">[node:title]</a> <span class="description">del [node:fecha_cfd]</span></h1><p>Descargar (requiere iniciar sesión en la página): [node:cfde_dl_links]</p>',
               'message_plaintext' => '[node:title] del [node:fecha_cfd-full]
-Ver y descargar (requiere iniciar sesión en la página): [node:node-path]',
+Ver y descargar (requiere iniciar sesión en la página): [node:node-url]',
               'attachments' => '',
               '#argument map' => array(
                 'node' => 'node',
