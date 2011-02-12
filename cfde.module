@@ -593,6 +593,20 @@ function cfde_user($op, &$edit, &$account, $category = NULL) {
         db_query("UPDATE {cfde} SET cliente_uid = 1 WHERE cliente_rfc = '%s'", $account->name);
       }
       break;
+    case 'form':
+      //TODO also needs to check if the included rule is activated, but how?
+      if ($category == 'account' && module_exists('rules')) {
+        $form = array();
+        $form['mimemail']['cfde_mail_notify'] = array(
+          '#type'           => 'checkbox',
+          '#title'           => t('Recieve notification on new FEs'),
+          '#default_value'   => $account->cfde_mail_notify,
+          '#description'     => t('Check this option if you wish to receive an email notification whenever FEs are emitted for you'),
+          '#weight' => 2,
+        );
+        return $form;
+      }
+      break;
   }
 }
 
@@ -628,7 +642,7 @@ function cfde_cron() {
   $count = 0;
   while ($cfd = db_fetch_array($result)) {
     $count++;
-    //do this instead of node_delte() as it is faster?
+    //do this instead of node_delte() as it is faster? but incomplete e.g. doesn't erase aliases
     db_query('DELETE FROM {node} WHERE nid = %d', $cfd['nid']);
     db_query('DELETE FROM {node_revisions} WHERE nid = %d', $cfd['nid']);
     db_query('DELETE FROM {cfde} WHERE nid = %d', $cfd['nid']);
